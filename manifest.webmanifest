@@ -1,0 +1,22 @@
+{
+  "name": "Luna Calendar",
+  "short_name": "Luna",
+  "description": "Offline lunar calendar with personal activity ratings",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#151720",
+  "theme_color": "#171923",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#171923">
+<title>Luna Calendar — Transit Edition v0.4</title>
+<style>
+:root{--bg:#151720;--panel:#20232e;--panel2:#272a36;--text:#e9eaf1;--muted:#969bad;--green:#63c78c;--red:#e47772;--yellow:#e3c66e;--line:#383c4a;--accent:#a6b4ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{max-width:1100px;margin:auto;padding:22px 18px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:800;letter-spacing:.14em;font-size:13px;color:#c9cde0}.brand span{font-size:22px;letter-spacing:0;margin-right:8px}
+main{max-width:1100px;margin:auto;padding:0 18px 32px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin:8px 0 14px;gap:10px}
+.month-title{font-size:23px;font-weight:700}
+button,select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 12px;font:inherit;cursor:pointer}
+button:hover{border-color:var(--accent)}.nav{display:flex;gap:7px;align-items:center}
+.layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(270px,.9fr);gap:14px}
+.panel{background:var(--panel);border:1px solid #303442;border-radius:16px;overflow:hidden}
+.calendar{padding:12px}
+.weekdays,.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.weekdays div{text-align:center;color:var(--muted);font-size:12px;padding:7px 0}
+.day{min-height:92px;background:#242733;border:1px solid #303442;border-radius:9px;padding:6px;cursor:pointer;position:relative;transition:.12s}
+.day:hover{border-color:#7781a5}.day.selected{outline:2px solid var(--accent);background:#303447}.day.out{opacity:.28;pointer-events:none}
+.day.today .num{color:var(--accent);font-weight:800}
+.num{font-size:13px}.phase{font-size:14px;position:absolute;right:5px;top:4px;color:#d7d8e8}
+.icons{font-size:12px;white-space:nowrap;overflow:hidden;margin-top:10px}
+.bars{display:flex;gap:3px;margin-top:5px}.bar{height:4px;flex:1;border-radius:4px;background:#555967}.bar.good{background:var(--green)}.bar.bad{background:var(--red)}.bar.neutral{background:var(--yellow)}
+.side{padding:16px}.side h2{font-size:19px;margin:0 0 5px}.date-sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+.moonrow{display:flex;align-items:center;gap:12px;padding:10px;background:var(--panel2);border-radius:12px;margin-bottom:12px}
+.moon{font-size:34px;width:44px;text-align:center}.mooninfo{font-size:13px;color:var(--muted)}.mooninfo strong{display:block;color:var(--text);font-size:15px;margin-bottom:3px}
+.summary{font-size:13px;color:var(--muted);line-height:1.45;margin:10px 0 15px}
+.activities{display:flex;flex-direction:column;gap:7px}.rating-pair{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.rating-pill{font-size:10px;font-weight:700;padding:4px 6px;border-radius:6px;background:#363949}.rating-pill.good{color:var(--green)}.rating-pill.bad{color:var(--red)}.rating-pill.neutral{color:var(--yellow)}
+.activity{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:9px 10px;background:var(--panel2);border-radius:10px}
+.activity .emoji{font-size:18px}.activity .name{font-size:13px}.status{font-size:11px;font-weight:700}.status.good{color:var(--green)}.status.bad{color:var(--red)}.status.neutral{color:var(--yellow)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin:12px 2px}
+.legend span{display:flex;align-items:center;gap:5px}.swatch{width:9px;height:9px;border-radius:2px}
+.footer{max-width:1100px;margin:0 auto;padding:0 18px 24px;color:var(--muted);font-size:11px;line-height:1.5}
+.settings{margin-top:14px;padding:14px}.settings summary{cursor:pointer;font-weight:600}.settinglist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.setting{display:flex;align-items:center;gap:8px;background:var(--panel2);padding:9px;border-radius:9px;font-size:13px}.setting input{accent-color:var(--accent)}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.day{min-height:74px}.icons{font-size:10px}.calendar{padding:7px}.day{padding:4px}.month-title{font-size:20px}}
+@media(max-width:450px){
+header{padding-top:15px;padding-left:12px;padding-right:12px}
+main{padding-left:10px;padding-right:10px}
+.day{min-height:66px;padding:3px}
+.bars{gap:2px}.bar{height:3px}.icons{margin-top:7px;font-size:9px}
+.toolbar{flex-wrap:wrap}
+.month-title{font-size:18px}
+.natal{padding:12px!important}
+.activity{grid-template-columns:24px 1fr;gap:6px;padding:8px}
+.rating-pair{grid-column:2;justify-content:flex-start}
+.rating-pill{font-size:9px}
+.calendar{padding:5px}
+.weekdays div{font-size:10px}
+}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Luna Calendar">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+<header><div class="brand"><span>☾</span>LUNA CALENDAR</div><button id="todayBtn">Today</button></header>
+<main>
+<div class="toolbar">
+<div class="nav"><button id="prev" aria-label="Previous month">‹</button><button id="next" aria-label="Next month">›</button></div>
+<div class="month-title" id="monthTitle"></div>
+
+</div>
+<section class="panel natal" style="margin:0 0 14px;padding:14px 16px;background:linear-gradient(120deg,#282b3b,#252733)">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+<div><div style="font-size:11px;color:var(--muted);letter-spacing:.12em;font-weight:700">YOUR NATAL PROFILE</div>
+<div id="natalHeadline" style="font-size:18px;font-weight:700;margin-top:4px">Natal chart calculating…</div>
+<div style="font-size:12px;color:var(--muted);margin-top:4px">1 May 1981 · 09:05 · Ljubljana, Slovenia</div></div>
+<div style="font-size:12px;color:#c9cde0;max-width:380px">Natal longitudes calculated from supplied birth details; daily transit aspects are approximate astrological interpretations—not scientific predictions.</div>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:12px">
+<div id="natalPlacements" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:12px"></div>
+</div></section>\n<div class="layout">
+<section class="panel calendar">
+<div class="weekdays"><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div><div>SUN</div></div>
+<div class="days" id="days"></div>
+<div class="legend"><span><i class="swatch" style="background:var(--green)"></i>Favourable</span><span><i class="swatch" style="background:var(--red)"></i>Less favourable</span><span><i class="swatch" style="background:var(--yellow)"></i>Mixed / neutral</span><span>Upper bars = traditional · lower bars = personal</span></div>
+</section>
+<section class="panel side" id="detail"></section>
+</div>
+<details class="panel settings">
+<summary>Activity display settings</summary>
+<div class="settinglist" id="settings"></div>
+</details>
+</main>
+<div class="footer">Lunar phases and Moon-sign positions are approximate. Traditional and personal ratings are symbolic astrology/folklore, not scientific or medical advice. Natal placements shown are a preliminary profile and should be verified with a professional chart calculation.</div>
+<script>
+const activities=[
+ {id:"garden",icon:"🌱",name:"Planting & sowing"},
+ {id:"prune",icon:"✂️",name:"Pruning & harvesting"},
+ {id:"hair",icon:"💇",name:"Haircuts & colouring"},
+ {id:"home",icon:"🏠",name:"Cleaning & household"},
+ {id:"body",icon:"💪",name:"Exercise & body care"},
+ {id:"nails",icon:"💅",name:"Nails & personal care"},
+ {id:"food",icon:"🥕",name:"Food & preserving"},
+ {id:"rest",icon:"🌙",name:"Rest & reflection"},
+ {id:"luck",icon:"🍀",name:"Lucky & unlucky days"},
+ {id:"finance",icon:"💰",name:"Finance & money"},
+ {id:"shopping",icon:"🛍️",name:"Shopping & purchases"},
+ {id:"energy",icon:"⚡",name:"Energy & vitality"},
+ {id:"emotion",icon:"🌊",name:"Emotional sensitivity"},
+ {id:"recovery",icon:"🛌",name:"Stress & recovery"},
+ {id:"social",icon:"🤝",name:"Social sensitivity"},
+ {id:"focus",icon:"🧠",name:"Focus & mental clarity"}
+];
+const synodic=29.530588853, epoch=Date.UTC(2000,0,6,18,14);
+const today=new Date();let view=new Date(today.getFullYear(),today.getMonth(),1);let selected=new Date(today);let enabled=new Set(activities.map(a=>a.id));
+const fmt=new Intl.DateTimeFormat(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+function phase(date){let days=(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())-epoch)/86400000;let age=((days%synodic)+synodic)%synodic;let p=age/synodic;let illum=(1-Math.cos(2*Math.PI*p))/2;
+let names=["New Moon","Waxing Crescent","First Quarter","Waxing Gibbous","Full Moon","Waning Gibbous","Last Quarter","Waning Crescent"];
+let idx=Math.round(p*8)%8;let emoji=["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"][idx];
+return {age,p,illum,name:names[idx],emoji,idx, waxing:p<.5};}
+function rating(id,date,ph,trad){
+ let day=date.getDate(),seed=(day+ph.idx*3)%7;
+ // transparent illustrative traditional rules, intentionally simple
+ if(trad==="garden"){
+   if(id==="garden") return ph.waxing?(seed===0?"neutral":"good"):"bad";
+   if(id==="prune") return ph.waxing?"bad":(seed===2?"neutral":"good");
+   if(id==="food") return ph.waxing?"neutral":"good";
+   if(id==="home") return "neutral";
+   if(id==="rest") return ph.idx===0||ph.idx===4?"good":"neutral";
+   return "neutral";
+ }
+ if(id==="garden") return ph.waxing?(seed===0?"neutral":"good"):"bad";
+ if(id==="prune") return ph.waxing?"bad":(seed===2?"neutral":"good");
+ if(id==="hair") return ph.waxing?"good":(seed===3?"neutral":"bad");
+ if(id==="home") return ph.waxing?"neutral":"good";
+ if(id==="body") return ph.idx===0||ph.idx===4?"neutral":"good";
+ if(id==="nails") return ph.waxing?"good":"bad";
+ if(id==="food") return ph.waxing?"neutral":"good";
+ if(id==="rest") return ph.idx===0||ph.idx===4?"good":"neutral";
+ if(id==="luck") return (ph.idx===2||ph.idx===4||ph.idx===6)?"good":(ph.idx===0?"bad":"neutral");
+ if(id==="finance") return ph.waxing?"good":(ph.idx===4?"neutral":"bad");
+ if(id==="shopping") return ph.waxing?"good":(ph.idx===4?"neutral":"bad");
+ return "neutral";
+}
+// Approximate tropical lunar longitude/sign from a compact orbital approximation.
+const zodiac=["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+function moonSign(date){
+ const jd=Date.UTC(date.getFullYear(),date.getMonth(),date.getDate(),12)/86400000+2440587.5;
+ const T=(jd-2451545.0)/36525;
+ const L=(218.3164477+481267.88123421*T-0.0015786*T*T+T*T*T/538841-T*T*T*T/65194000)%360;
+ const M=(134.9633964+477198.8675055*T+0.0087414*T*T+T*T*T/69699-T*T*T*T/14712000)*Math.PI/180;
+ const D=(297.8501921+445267.1114034*T-0.0018819*T*T+T*T*T/545868-T*T*T*T/113065000)*Math.PI/180;
+ const F=(93.2720950+483202.0175233*T-0.0036539*T*T-T*T*T/3526000+T*T*T*T/863310000)*Math.PI/180;
+ let lon=L+6.289*Math.sin(M)+1.274*Math.sin(2*D-M)+0.658*Math.sin(2*D)+0.214*Math.sin(2*M)-0.186*Math.sin( Math.PI/180*(357.5291092+35999.0502909*T))*Math.sin(M)-0.114*Math.sin(2*F);
+ lon=((lon%360)+360)%360;return {lon,sign:zodiac[Math.floor(lon/30)],index:Math.floor(lon/30)};
+}
+// Low-precision orbital-element engine (Keplerian elements; approximate, suitable for symbolic astrology, not ephemeris-grade).
+const planetDefs={
+ Mercury:[48.3313,3.24587e-5,7.0047,5.00e-8,29.1241,1.01444e-5,0.387098,0,0.205635,5.59e-10,168.6562,4.0923344368],
+ Venus:[76.6799,2.46590e-5,3.3946,2.75e-8,54.8910,1.38374e-5,0.723330,0,0.006773,-1.302e-9,48.0052,1.6021302244],
+ Earth:[0,0,0,0,102.9373,1.71946e-5,1,0,0.016709,-1.151e-9,356.0470,0.9856002585],
+ Mars:[49.5574,2.11081e-5,1.8497,-1.78e-8,286.5016,2.92961e-5,1.523688,0,0.093405,2.516e-9,18.6021,0.5240207766],
+ Jupiter:[100.4542,2.76854e-5,1.3030,-1.557e-7,273.8777,1.64505e-5,5.20256,0,0.048498,4.469e-9,19.8950,0.0830853001],
+ Saturn:[113.6634,2.38980e-5,2.4886,-1.081e-7,339.3939,2.97661e-5,9.55475,0,0.055546,-9.499e-9,316.9670,0.0334442282],
+ Uranus:[74.0005,1.3978e-5,0.7733,1.9e-8,96.6612,3.0565e-5,19.2184,0,0.046381,-7.5e-9,142.5905,0.011725806],
+ Neptune:[131.7806,3.0173e-5,1.7700,-2.55e-7,272.8461,-6.027e-6,30.1104,0,0.009456,6.0e-9,260.2471,0.005995147],
+ Pluto:[110.3035,-1.1344e-5,17.1418,3.0e-8,113.7633,2.0e-5,39.482,0,0.248807,-6.0e-8,14.53,0.00396]
+};
+function jd(date){return date.getTime()/86400000+2440587.5;}
+function norm(x){return ((x%360)+360)%360;}
+function planetLon(name,date){let T=(jd(date)-2451545)/36525, q=planetDefs[name];let [N,Nr,i,ir,w,wr,a,ar,e,er,M0,Mr]=q;N+=Nr*T;i+=ir*T;w+=wr*T;e+=er*T;M=norm(M0+Mr*(jd(date)-2451545))*Math.PI/180;
+ let E=M;for(let k=0;k<8;k++)E=E-(E-e*Math.sin(E)-M)/(1-e*Math.cos(E));
+ let xv=a*(Math.cos(E)-e),yv=a*Math.sqrt(1-e*e)*Math.sin(E),v=Math.atan2(yv,xv),r=Math.hypot(xv,yv);
+ let rad=Math.PI/180;let x=r*(Math.cos(N*rad)*Math.cos(v+w*rad)-Math.sin(N*rad)*Math.sin(v+w*rad)*Math.cos(i*rad));let y=r*(Math.sin(N*rad)*Math.cos(v+w*rad)+Math.cos(N*rad)*Math.sin(v+w*rad)*Math.cos(i*rad));return norm(Math.atan2(y,x)/rad);
+}
+function geoLon(name,date){if(name==='Sun')return norm(planetLon('Earth',date)+180);if(name==='Moon')return moonSign(date).lon;let p=planetLon(name,date),e=planetLon('Earth',date),rad=Math.PI/180;let px=Math.cos(p*rad)*planetDefs[name][6],py=Math.sin(p*rad)*planetDefs[name][6],ex=Math.cos(e*rad),ey=Math.sin(e*rad);return norm(Math.atan2(py-ey,px-ex)/rad);}
+const planets=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+const natalMoment=new Date(Date.UTC(1981,4,1,7,5)); // Ljubljana CEST (UTC+2)
+const natal={};planets.forEach(n=>natal[n]=geoLon(n,natalMoment));
+function signAt(l){return zodiac[Math.floor(norm(l)/30)];}
+function aspectsBetween(a,b){let d=Math.abs(norm(a-b));d=Math.min(d,360-d);let asp=[{angle:0,name:'conjunction',weight:1.0},{angle:60,name:'sextile',weight:.55},{angle:90,name:'square',weight:-.8},{angle:120,name:'trine',weight:.8},{angle:180,name:'opposition',weight:-.85}];let best=null;for(let x of asp){let orb=Math.abs(d-x.angle);let limit=x.angle===0||x.angle===180?8:6;if(orb<limit&&(!best||orb<best.orb))best={...x,orb,strength:1-orb/limit};}return best;}
+const transitWeight={Sun:.45,Moon:1.2,Mercury:.35,Venus:.6,Mars:.8,Jupiter:.7,Saturn:.8,Uranus:.45,Neptune:.3,Pluto:.35};
+const activityPlanet={garden:{Moon:1,Venus:1,Saturn:.5},prune:{Mars:1,Saturn:1,Moon:.5},hair:{Venus:1,Moon:.7},home:{Moon:1,Venus:.6,Saturn:.5},body:{Mars:1,Sun:.7,Jupiter:.5},nails:{Venus:1,Moon:.6},food:{Moon:1,Venus:1,Jupiter:.6},rest:{Moon:1,Neptune:.7,Saturn:.5},luck:{Jupiter:1,Sun:.5},finance:{Jupiter:1,Venus:1,Saturn:.5},shopping:{Venus:1,Mercury:1,Jupiter:.5},
+ energy:{Sun:1,Mars:1,Jupiter:.6,Moon:.5},
+ emotion:{Moon:1,Venus:.6,Neptune:.5},
+ recovery:{Moon:1,Saturn:.7,Neptune:.7},
+ social:{Venus:1,Mercury:.7,Jupiter:.6,Moon:.5},
+ focus:{Mercury:1,Saturn:.7,Sun:.5}};
+const transitPositionCache=new Map(), personalRatingCache=new Map();
+function dateKey(date){return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;}
+function transitPersonal(id,date,trad){
+ const cacheKey=`${id}|${dateKey(date)}|${trad}`;
+ if(personalRatingCache.has(cacheKey))return personalRatingCache.get(cacheKey);
+ let score=trad==='good'?1:trad==='bad'?-1:0, details=[];
+ const dayKey=dateKey(date);
+ let trans=transitPositionCache.get(dayKey);
+ if(!trans){trans=Object.fromEntries(planets.map(n=>[n,geoLon(n,date)]));transitPositionCache.set(dayKey,trans);}
+ for(let t of planets){let relevance=(activityPlanet[id]||{})[t]||0;if(!relevance)continue;for(let n of planets){let asp=aspectsBetween(trans[t],natal[n]);if(!asp)continue;let val=asp.weight*asp.strength*relevance*transitWeight[t];score+=val;if(Math.abs(val)>.28)details.push(`${t} ${asp.name} natal ${n} (${asp.orb.toFixed(1)}°)`);}}
+ // Moon-sign symbolism adds a modest, transparent layer to personal activity scoring.
+ let ms=moonSign(date).index, signMod={garden:[1,1,0,0,0,1,0,0,0,0,0,0],prune:[0,0,0,0,0,1,0,1,0,0,0,0],hair:[0,1,0,0,0,0,0,-1,0,0,0,0],home:[0,0,0,2,0,0,0,0,0,0,0,0],body:[1,0,0,0,1,0,0,0,0,0,0,0],nails:[0,1,0,0,0,0,0,0,0,0,0,0],food:[1,1,0,1,0,0,0,0,0,0,0,0],rest:[0,0,0,2,0,0,0,0,0,0,0,0],luck:[1,0,1,0,1,0,1,0,0,0,0,0],finance:[0,1,0,0,0,0,0,0,0,1,0,0],shopping:[0,1,1,0,0,0,0,0,0,0,0,0],
+ energy:[0,0,0,0,1,0,0,0,0,0,0,0],
+ emotion:[0,0,0,2,0,0,0,1,0,0,0,0],
+ recovery:[0,0,0,2,0,0,0,0,0,0,0,1],
+ social:[0,0,1,0,1,0,1,0,0,0,0,0],
+ focus:[0,0,1,0,0,1,0,0,0,1,1,0]};score+=(signMod[id]||[])[ms]||0;
+ const result={rating:score>=1.25?'good':score<=-1.25?'bad':'neutral',score,details:[...new Set(details)].slice(0,3),trans}; personalRatingCache.set(cacheKey,result); return result;}
+function personalRating(id,date,ph,trad){return transitPersonal(id,date,trad).rating;}
+function monthLabel(d){return d.toLocaleDateString(undefined,{month:"long",year:"numeric"});}
+function render(){
+ document.getElementById("monthTitle").textContent=monthLabel(view);
+ const days=document.getElementById("days");days.innerHTML="";
+ let first=new Date(view.getFullYear(),view.getMonth(),1);let offset=(first.getDay()+6)%7;
+ let start=new Date(first);start.setDate(first.getDate()-offset);
+ for(let i=0;i<42;i++){
+  let d=new Date(start);d.setDate(start.getDate()+i);
+  let cell=document.createElement("div");cell.className="day"+(d.getMonth()!==view.getMonth()?" out":"")+(same(d,selected)?" selected":"")+(same(d,today)?" today":"");
+  let ph=phase(d);let visible=activities.filter(a=>enabled.has(a.id));
+  let tradRatings=visible.slice(0,4).map(a=>rating(a.id,d,ph,"general"));
+  let personalRatings=visible.slice(0,4).map(a=>personalRating(a.id,d,ph,rating(a.id,d,ph,"general")));
+  cell.innerHTML=`<span class="num">${d.getDate()}</span><span class="phase">${ph.emoji}</span><div class="icons">${visible.slice(0,3).map(a=>a.icon).join(" ")}</div><div class="bars" title="Traditional">${tradRatings.map(r=>`<i class="bar ${r}"></i>`).join("")}</div><div class="bars" title="Personal natal rating" style="opacity:.65;margin-top:3px">${personalRatings.map(r=>`<i class="bar ${r}"></i>`).join("")}</div>`;
+  cell.addEventListener("click",()=>{selected=new Date(d);render();});days.appendChild(cell);
+ }
+ renderDetail();
+}
+function same(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function label(r){return r==="good"?"Favourable":r==="bad"?"Less favourable":"Mixed";}
+function bioSensitivity(date){
+ let moon=moonSign(date).index, ph=phase(date), transitMoon=geoLon("Moon",date), transitSun=geoLon("Sun",date);
+ let aspects=[aspectsBetween(transitMoon,natal.Moon),aspectsBetween(transitMoon,natal.Sun),aspectsBetween(transitSun,natal.Moon),aspectsBetween(transitMoon,natal.Mars)];
+ const intensity=aspects.filter(a=>a&&a.weight<0).reduce((v,a)=>v+a.strength,0);
+ const supportive=aspects.filter(a=>a&&a.weight>0).reduce((v,a)=>v+a.strength,0);
+ const signBase={energy:moon===4||moon===0?72:moon===9||moon===10?45:58,emotion:moon===3||moon===7?72:moon===0?62:48,recovery:moon===3||moon===11?70:moon===0||moon===4?58:45,social:moon===1||moon===2||moon===4||moon===6?68:45,focus:moon===1||moon===5||moon===9||moon===10?68:50};
+ return {energy:clamp(signBase.energy+supportive*8-intensity*10),emotion:clamp(signBase.emotion+intensity*12-supportive*5),recovery:clamp(signBase.recovery+intensity*7),social:clamp(signBase.social+supportive*9-intensity*8),focus:clamp(signBase.focus+supportive*7-intensity*7)};
+}
+function clamp(v){return Math.max(0,Math.min(100,Math.round(v)));}
+function renderBioGraph(date){
+ const scores=bioSensitivity(date), names={energy:"Energy & vitality",emotion:"Emotional sensitivity",recovery:"Stress & recovery",social:"Social sensitivity",focus:"Focus & mental clarity"};
+ const desc={energy:"Higher suggests symbolically active energy",emotion:"Higher suggests greater emotional sensitivity",recovery:"Higher suggests prioritizing restoration",social:"Higher suggests social openness",focus:"Higher suggests concentration potential"};
+ const host=document.getElementById("bioGraph");if(!host)return;
+ host.innerHTML=Object.keys(scores).map(k=>`<div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>${names[k]}</span><span>${scores[k]}%</span></div><div style="height:7px;background:#444656;border-radius:8px;overflow:hidden"><div style="height:100%;width:${scores[k]}%;background:linear-gradient(90deg,#8194bd,#b5c5df);border-radius:8px"></div></div><div style="font-size:9px;color:var(--muted);margin-top:2px">${desc[k]}</div></div>`).join("");
+}
+
+function renderDetail(){
+ let ph=phase(selected),el=document.getElementById("detail");
+ let daily=activities.filter(a=>enabled.has(a.id)).map(a=>({a,r:rating(a.id,selected,ph,"general"),p:personalRating(a.id,selected,ph,rating(a.id,selected,ph,"general"))}));
+ let good=daily.filter(x=>x.p==="good").length,bad=daily.filter(x=>x.p==="bad").length;
+ let advice=good>bad?"Your natal-weighted guide highlights several activities today.":bad>good?"Your personal guide suggests being selective today.":"Your personal guide is mixed today.";
+ el.innerHTML=`<h2>${fmt.format(selected)}</h2><div class="date-sub">Traditional + personal natal guide</div>
+ <div class="moonrow"><div class="moon">${ph.emoji}</div><div class="mooninfo"><strong>${ph.name} · Moon in ${moonSign(selected).sign}</strong>${Math.round(ph.illum*100)}% illuminated · lunar age ${ph.age.toFixed(1)} days</div></div>
+ <p class="summary">${advice}</p><div class="summary" style="background:#2c2e3d;padding:12px;border-radius:10px;color:#d5d7e5;margin:10px 0"><strong style="color:#fff">Bio-sensitivity profile</strong><div style="font-size:11px;color:var(--muted);margin:4px 0 8px">Astrological reflection scale · not a health measurement</div><div id="bioGraph" style="display:grid;gap:8px"></div><div style="font-size:10px;color:var(--muted);margin-top:8px">Scores represent symbolic sensitivity themes inferred from your natal chart and approximate daily transits. They do not assess physical or mental health.</div></div><div class="activities">${daily.map(({a,r,p})=>`<div class="activity"><span class="emoji">${a.icon}</span><span class="name">${a.name}</span><span class="rating-pair"><span class="rating-pill ${r}">Trad: ${label(r)}</span><span class="rating-pill ${p}">You: ${label(p)}</span></span></div>`).join("")}</div><p class="summary" style="margin-bottom:0"><strong>Transit aspects:</strong> ${daily.map(({a})=>{let x=transitPersonal(a.id,selected,rating(a.id,selected,ph,"general"));return x.details.length?`<br><b>${a.name}:</b> ${x.details.join("; ")}`:""}).filter(Boolean).join("")||"No close activity-linked aspects detected today."}<br><br>Scores use approximate Keplerian planetary positions and aspect orbs; they are educational astrological symbolism, not scientifically validated guidance. Planetary positions are low-precision estimates and should not be treated as an ephemeris.</p>`;
+ renderBioGraph(selected);
+}
+function renderSettings(){
+ let s=document.getElementById("settings");s.innerHTML=activities.map(a=>`<label class="setting"><input type="checkbox" ${enabled.has(a.id)?"checked":""} data-id="${a.id}">${a.icon} ${a.name}</label>`).join("");
+ s.querySelectorAll("input").forEach(input=>input.addEventListener("change",e=>{let id=e.target.dataset.id;e.target.checked?enabled.add(id):enabled.delete(id);render();}));
+}
+document.getElementById("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render();};
+document.getElementById("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render();};
+document.getElementById("todayBtn").onclick=()=>{view=new Date(today.getFullYear(),today.getMonth(),1);selected=new Date(today);render();};
+
+document.getElementById("natalHeadline").textContent=`☉ ${signAt(natal.Sun)} · ☽ ${signAt(natal.Moon)} · calculated chart`;document.getElementById("natalPlacements").innerHTML=planets.slice(0,6).map(n=>`<span style="background:#37394a;border-radius:8px;padding:6px 9px">${n}: ${signAt(natal[n])}</span>`).join("");renderSettings();render();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(err => {
+      console.warn("Offline installation support unavailable:", err);
+    });
+  });
+}
+</script>
+</body>
+</html>
